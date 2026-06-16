@@ -3,96 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WM 2026 Live Dashboard (24" Kiosk)</title>
+    <title>WM 2026 – Turnierplaner (Tagesspiegel Edition)</title>
     <style>
         :root {
-            --bg-color: #0b0f19;
-            --card-bg: #161f30;
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-            --accent: #00dfa2;
-            --accent-gradient: linear-gradient(135deg, #00dfa2, #007bff);
-            --danger: #ff4a5a;
+            --ts-navy: #111827;
+            --ts-blue: #1e40af;
+            --ts-light-bg: #f8fafc;
+            --ts-card-bg: #ffffff;
+            --ts-border: #cbd5e1;
+            --ts-text: #334155;
+            --ts-accent: #b91c1c; /* Edles Rot für Highlights / Live */
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: Arial, sans-serif;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            overflow: hidden; /* Verhindert Scrollbalken auf dem Kiosk-Monitor */
+            background-color: var(--ts-light-bg);
+            color: var(--ts-text);
             height: 100vh;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
         }
 
-        /* Header-Bereich mit Live-Ticker-Effekt */
+        /* Seriöser Zeitungs-Header */
         header {
-            background: rgba(22, 31, 48, 0.85);
-            backdrop-filter: blur(10px);
+            background-color: var(--ts-navy);
+            color: white;
             padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid #1e293b;
+            border-bottom: 4px solid var(--ts-blue);
         }
 
-        .logo-area h1 {
-            font-size: 24px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .status-pill {
-            background: rgba(0, 223, 162, 0.15);
-            color: var(--accent);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 14px;
+        .header-title h1 {
+            font-size: 26px;
             font-weight: bold;
-            text-transform: uppercase;
-            animation: pulse 2s infinite;
+            letter-spacing: -0.5px;
         }
 
-        /* Fortschrittsbalken für die Folien-Rotation */
-        .progress-bar-container {
+        .header-title span {
+            font-size: 13px;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+
+        .clock {
+            font-size: 20px;
+            font-weight: bold;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 15px;
+            border-radius: 4px;
+        }
+
+        /* Fortschrittsanzeige für automatischen Wechsel */
+        .progress-container {
             width: 100%;
-            height: 4px;
-            background: #1e293b;
+            height: 5px;
+            background: #e2e8f0;
         }
         .progress-bar {
             height: 100%;
             width: 0%;
-            background: var(--accent);
+            background: var(--ts-blue);
             transition: width linear;
         }
 
-        /* Hauptinhalt & Folien-Steuerung */
+        /* Hauptbereich */
         main {
             flex: 1;
             position: relative;
-            padding: 30px;
+            padding: 25px;
         }
 
         .slide {
             position: absolute;
-            top: 30px;
-            left: 30px;
-            right: 30px;
-            bottom: 30px;
+            top: 25px; left: 25px; right: 25px; bottom: 25px;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.8s ease-in-out, visibility 0.8s;
+            transition: opacity 0.6s ease-in-out;
             display: grid;
-            gap: 25px;
+            gap: 20px;
         }
 
         .slide.active {
@@ -100,246 +97,353 @@
             visibility: visible;
         }
 
-        /* Layouts für die verschiedenen Ansichten */
-        #slide-live { grid-template-columns: 1fr 1fr; }
-        #slide-tables { grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr; }
-        #slide-ko-left, #slide-ko-right { grid-template-columns: repeat(5, 1fr); align-items: center; }
+        /* Ansichten-Layouts */
+        #slide-gruppe-e { grid-template-columns: 1.2fr 1fr; }
+        #slide-ko-links, #slide-ko-rechts { grid-template-columns: repeat(4, 1fr); align-items: center; }
 
-        /* Universelle Karten-Styles */
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
+        /* Karten-Design im klassischen Zeitungsstil */
+        .ts-box {
+            background: var(--ts-card-bg);
+            border: 1px solid var(--ts-border);
+            border-top: 4px solid var(--ts-blue);
+            border-radius: 4px;
             padding: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            border: 1px solid #243146;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
 
-        .card h2 {
+        .ts-box h2 {
             font-size: 18px;
+            color: var(--ts-navy);
             margin-bottom: 15px;
-            color: var(--accent);
-            border-bottom: 1px solid #243146;
-            padding-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #e2e8f0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        /* Komponenten: Live-Spiele & Matches */
-        .match-row {
+        /* Spielansicht (Echte WM 2026 Daten) */
+        .match-card {
+            background: #f1f5f9;
+            border: 1px solid var(--ts-border);
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 4px;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #1e293b;
+            align-items: center;
         }
-        .match-row:last-child { border-none: none; }
-        .team { font-weight: 600; font-size: 16px; width: 40%; }
-        .team.right { text-align: right; }
-        .score-box {
-            background: #0b0f19;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--accent);
-            min-width: 60px;
-            text-align: center;
-        }
-        .match-meta { text-align: center; font-size: 12px; color: var(--text-muted); }
 
-        /* Komponenten: Tabellen */
-        .mini-table {
+        .match-info {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .match-teams {
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--ts-navy);
+        }
+
+        /* Interaktive Tore-Eingabe direkt am Kiosk */
+        .score-input {
+            width: 35px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            border: 1px solid var(--ts-border);
+            border-radius: 4px;
+            padding: 3px;
+            margin: 0 3px;
+        }
+
+        /* Tabelle */
+        .ts-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 13px;
+            margin-top: 10px;
         }
-        .mini-table th { color: var(--text-muted); text-align: left; padding-bottom: 5px; }
-        .mini-table td { padding: 6px 0; border-bottom: 1px solid #1e293b; }
-        .mini-table tr.promotion td { color: var(--accent); font-weight: bold; }
 
-        /* Komponenten: K.O.-Turnierbaum (Aufgeteilt & optimiert für 24") */
-        .ko-round-col {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-            height: 100%;
-        }
-        .ko-match {
-            background: var(--card-bg);
-            border: 1px solid #243146;
-            border-radius: 8px;
-            padding: 10px;
+        .ts-table th {
+            background: #f1f5f9;
+            color: var(--ts-navy);
+            text-align: left;
+            padding: 8px;
             font-size: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            font-weight: bold;
+            border: 1px solid var(--ts-border);
         }
-        .ko-title {
-            font-size: 12px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            text-align: center;
-            margin-bottom: 10px;
+
+        .ts-table td {
+            padding: 10px 8px;
+            font-size: 14px;
+            border: 1px solid var(--ts-border);
+        }
+
+        .ts-table tr:nth-child(-n+3) td {
+            background-color: #f0fdf4; /* Grünliche Schattierung für K.O.-Phase */
             font-weight: bold;
         }
 
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
+        /* K.O. Baum Struktur (Lesbar aufgeteilt) */
+        .ko-stage {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        .ko-stage-title {
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            background: var(--ts-navy);
+            color: white;
+            padding: 6px;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+
+        .ko-match-box {
+            background: white;
+            border: 1px solid var(--ts-border);
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .ko-match-box input {
+            float: right;
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo-area">
-            <h1>FIFA WORLD CUP 2026 • LIVE DASHBOARD</h1>
+        <div class="header-title">
+            <h1>DER SPIELPLAN • FUSSBALL-WM 2026</h1>
+            <span>Präsentiert im klassischen Tagesspiegel-Format</span>
         </div>
-        <div id="current-time" style="font-size: 18px; font-weight: bold; font-family: monospace;">12:00:00</div>
-        <div class="status-pill">● LIVE DATEN AKTIV</div>
+        <div class="clock" id="live-clock">00:00:00</div>
     </header>
 
-    <div class="progress-bar-container">
-        <div class="progress-bar" id="rotation-progress"></div>
+    <div class="progress-container">
+        <div class="progress-bar" id="rotation-bar"></div>
     </div>
 
     <main>
-        <div class="slide active" id="slide-live">
-            <div class="card">
-                <h2>Aktuelle Spiele / Heutige Begegnungen</h2>
-                <div id="live-matches-container">
-                    <div class="match-row">
-                        <span class="team">Deutschland</span>
-                        <div class="score-box">2 : 1</div>
-                        <span class="team right">Elfenbeinküste</span>
+        <div class="slide active" id="slide-gruppe-e">
+            <div class="ts-box">
+                <h2>Spiele & Ergebnisse: Gruppe E</h2>
+                
+                <div class="match-card">
+                    <div>
+                        <div class="match-info">Sonntag, 14. Juni • 19:00 Uhr • Houston</div>
+                        <div class="match-teams">Deutschland – Curaçao</div>
                     </div>
-                    <div class="match-meta">84. Minute • Gruppe E</div>
-                </div>
-            </div>
-            <div class="card">
-                <h2>Nächste anstehende Termine</h2>
-                <div id="upcoming-matches-container">
-                    <div class="match-row">
-                        <span class="team">Ecuador</span>
-                        <div class="score-box" style="color:var(--text-muted); font-size:14px;">22:00</div>
-                        <span class="team right">Curaçao</span>
+                    <div>
+                        <input type="number" class="score-input" value="1" min="0"> : 
+                        <input type="number" class="score-input" value="0" min="0">
                     </div>
-                    <div class="match-meta">21. Juni • Gruppe E</div>
                 </div>
-            </div>
-        </div>
 
-        <div class="slide" id="slide-tables">
-            <div class="card">
-                <h2>Gruppe E</h2>
-                <table class="mini-table">
-                    <thead><tr><th>Team</th><th>SP</th><th>TD</th><th>PNT</th></tr></thead>
-                    <tbody id="table-group-e">
-                        <tr class="promotion"><td>1. Deutschland</td><td>2</td><td>+7</td><td>6</td></tr>
-                        <tr class="promotion"><td>2. Elfenbeinküste</td><td>1</td><td>0</td><td>3</td></tr>
-                        <td>3. Ecuador</td><td>1</td><td>-1</td><td>0</td></tr>
-                        <td>4. Curaçao</td><td>2</td><td>-6</td><td>0</td></tr>
+                <div class="match-card">
+                    <div>
+                        <div class="match-info">Montag, 15. Juni • 01:00 Uhr • Philadelphia</div>
+                        <div class="match-teams">Elfenbeinküste – Ecuador</div>
+                    </div>
+                    <div>
+                        <input type="number" class="score-input" value="0" min="0"> : 
+                        <input type="number" class="score-input" value="0" min="0">
+                    </div>
+                </div>
+
+                <div class="match-card">
+                    <div>
+                        <div class="match-info">Samstag, 20. Juni • 22:00 Uhr • Toronto</div>
+                        <div class="match-teams">Deutschland – Elfenbeinküste</div>
+                    </div>
+                    <div>
+                        <input type="number" class="score-input" min="0"> : 
+                        <input type="number" class="score-input" min="0">
+                    </div>
+                </div>
+
+                <div class="match-card">
+                    <div>
+                        <div class="match-info">Sonntag, 21. Juni • 02:00 Uhr • Kansas City</div>
+                        <div class="match-teams">Ecuador – Curaçao</div>
+                    </div>
+                    <div>
+                        <input type="number" class="score-input" min="0"> : 
+                        <input type="number" class="score-input" min="0">
+                    </div>
+                </div>
+
+                <div class="match-card">
+                    <div>
+                        <div class="match-info">Donnerstag, 25. Juni • 22:00 Uhr • New York</div>
+                        <div class="match-teams">Ecuador – Deutschland</div>
+                    </div>
+                    <div>
+                        <input type="number" class="score-input" min="0"> : 
+                        <input type="number" class="score-input" min="0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="ts-box">
+                <h2>Tabelle Gruppe E</h2>
+                <table class="ts-table">
+                    <thead>
+                        <tr>
+                            <th>Land</th>
+                            <th style="text-align:center">Sp.</th>
+                            <th style="text-align:center">Tore</th>
+                            <th style="text-align:center">Pkt.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1. Deutschland</td>
+                            <td style="text-align:center">1</td>
+                            <td style="text-align:center">1:0</td>
+                            <td style="text-align:center">3</td>
+                        </tr>
+                        <tr>
+                            <td>2. Ecuador</td>
+                            <td style="text-align:center">1</td>
+                            <td style="text-align:center">0:0</td>
+                            <td style="text-align:center">1</td>
+                        </tr>
+                        <tr>
+                            <td>3. Elfenbeinküste</td>
+                            <td style="text-align:center">1</td>
+                            <td style="text-align:center">0:0</td>
+                            <td style="text-align:center">1</td>
+                        </tr>
+                        <tr>
+                            <td>4. Curaçao</td>
+                            <td style="text-align:center">1</td>
+                            <td style="text-align:center">0:1</td>
+                            <td style="text-align:center">0</td>
+                        </tr>
                     </tbody>
                 </table>
-            </div>
-            </div>
-
-        <div class="slide" id="slide-ko-left">
-            <div class="ko-round-col">
-                <div class="ko-title">16tel-Finale</div>
-                <div class="ko-match"><b>Sieger A</b><br>Dritter C/D</div>
-                <div class="ko-match"><b>Sieger B</b><br>Zweiter F</div>
-            </div>
-            <div class="ko-round-col">
-                <div class="ko-title">Achtelfinale</div>
-                <div class="ko-match">Offen<br>Offen</div>
-            </div>
-            <div class="ko-round-col">
-                <div class="ko-title">Viertelfinale</div>
-                <div class="ko-match">Offen<br>Offen</div>
-            </div>
-            <div class="ko-round-col">
-                <div class="ko-title">Halbfinale</div>
-                <div class="ko-match">Offen<br>Offen</div>
-            </div>
-            <div class="ko-round-col">
-                <div class="ko-title">FINALE (19. Juli)</div>
-                <div class="ko-match" style="border-color: var(--accent);"><b>METLIFE STADIUM</b><br>New York / NJ</div>
+                <p style="font-size: 11px; margin-top: 15px; color: #64748b;">* Die ersten zwei Teams sowie die 8 besten Gruppendritten qualifizieren sich für das Sechzehntelfinale.</p>
             </div>
         </div>
 
-        <div class="slide" id="slide-ko-right">
-            <div class="ko-round-col">
-                <div class="ko-title">FINALE</div>
-                <div class="ko-match" style="border-color: var(--accent);"><b>Weltmeister 2026</b><br>TBD</div>
+        <div class="slide" id="slide-ko-links">
+            <div class="ko-stage">
+                <div class="ko-stage-title">Sechzehntelfinale</div>
+                <div class="ko-match-box">
+                    Sieger Gr. A <input type="number" class="score-input" style="font-size:11px; width:25px;"><br>
+                    Dritter C/D/E <input type="number" class="score-input" style="font-size:11px; width:25px;">
+                </div>
+                <div class="ko-match-box">
+                    Zweiter Gr. C <input type="number" class="score-input" style="font-size:11px; width:25px;"><br>
+                    Zweiter Gr. I <input type="number" class="score-input" style="font-size:11px; width:25px;">
+                </div>
             </div>
-            <div class="ko-round-col">
-                <div class="ko-title">Halbfinale R</div>
-                <div class="ko-match">Offen<br>Offen</div>
+
+            <div class="ko-stage">
+                <div class="ko-stage-title">Achtelfinale</div>
+                <div class="ko-match-box">
+                    Offen <input type="number" class="score-input" style="font-size:11px; width:25px;"><br>
+                    Offen <input type="number" class="score-input" style="font-size:11px; width:25px;">
+                </div>
             </div>
-            <div class="ko-round-col">
-                <div class="ko-title">Viertelfinale R</div>
-                <div class="ko-match">Offen<br>Offen</div>
+
+            <div class="ko-stage">
+                <div class="ko-stage-title">Viertelfinale</div>
+                <div class="ko-match-box">
+                    Offen <input type="number" class="score-input" style="font-size:11px; width:25px;"><br>
+                    Offen <input type="number" class="score-input" style="font-size:11px; width:25px;">
+                </div>
             </div>
-            <div class="ko-round-col">
-                <div class="ko-title">Achtelfinale R</div>
-                <div class="ko-match">Offen<br>Offen</div>
+
+            <div class="ko-stage">
+                <div class="ko-stage-title">Halbfinale L</div>
+                <div class="ko-match-box" style="border-left: 4px solid var(--ts-accent);">
+                    TBD <input type="number" class="score-input" style="font-size:11px; width:25px;"><br>
+                    TBD <input type="number" class="score-input" style="font-size:11px; width:25px;">
+                </div>
             </div>
-            <div class="ko-round-col">
-                <div class="ko-title">16tel-Finale R</div>
-                <div class="ko-match"><b>Sieger C</b><br>Zweiter D</div>
-                <div class="ko-match"><b>Sieger D</b><br>Dritter A/B</div>
+        </div>
+
+        <div class="slide" id="slide-ko-rechts">
+            <div class="ko-stage">
+                <div class="ko-stage-title">Halbfinale R</div>
+                <div class="ko-match-box" style="border-right: 4px solid var(--ts-accent);">
+                    TBD <input type="number" class="score-input" style="font-size:11px; width:25px;"><br>
+                    TBD <input type="number" class="score-input" style="font-size:11px; width:25px;">
+                </div>
+            </div>
+
+            <div class="ko-stage">
+                <div class="ko-stage-title">Viertelfinale</div>
+                <div class="ko-match-box">
+                    Offen <input type="number" class="score-input" style="font-size:11px; width:25px;"><br>
+                    Offen <input type="number" class="score-input" style="font-size:11px; width:25px;">
+                </div>
+            </div>
+
+            <div class="ko-stage">
+                <div class="ko-stage-title">FINALE</div>
+                <div class="ko-match-box" style="background: #fffbeb; border: 2px solid #f59e0b;">
+                    <div style="text-align:center; font-weight:bold; margin-bottom:4px; font-size:10px; color:#b45309;">19. JULI • NEW YORK</div>
+                    Finalist 1 <input type="number" class="score-input" style="font-size:11px; width:25px;"><br>
+                    Finalist 2 <input type="number" class="score-input" style="font-size:11px; width:25px;">
+                </div>
+            </div>
+
+            <div class="ko-stage">
+                <div class="ko-stage-title">Sechzehntelfinale R</div>
+                <div class="ko-match-box">
+                    Sieger Gr. B <input type="number" class="score-input" style="font-size:11px; width:25px;"><br>
+                    Zweiter Gr. F <input type="number" class="score-input" style="font-size:11px; width:25px;">
+                </div>
+                <div class="ko-match-box">
+                    Sieger Gr. E <input type="number" class="score-input" style="font-size:11px; width:25px;"><br>
+                    Dritter A/B/C <input type="number" class="score-input" style="font-size:11px; width:25px;">
+                </div>
             </div>
         </div>
     </main>
 
     <script>
-        // Uhrzeit aktualisieren
+        // Uhrzeit im Header aktualisieren
         setInterval(() => {
             const now = new Date();
-            document.getElementById('current-time').innerText = now.toLocaleTimeString('de-DE');
+            document.getElementById('live-clock').innerText = now.toLocaleTimeString('de-DE');
         }, 1000);
 
-        // Folien-Rotation Steuerungs-Logik
+        // Slider-Rotation (Alle 12 Sekunden wechselt das Bild auf dem Monitor)
         const slides = document.querySelectorAll('.slide');
-        let currentSlideIndex = 0;
-        const slideDuration = 10000; // 10 Sekunden pro Ansicht
-        const progressBar = document.getElementById('rotation-progress');
+        let activeIdx = 0;
+        const displayTime = 12000; 
+        const bar = document.getElementById('rotation-bar');
 
-        function resetProgressBar() {
-            progressBar.style.transition = 'none';
-            progressBar.style.width = '0%';
+        function animateProgressBar() {
+            bar.style.transition = 'none';
+            bar.style.width = '0%';
             setTimeout(() => {
-                progressBar.style.transition = `width ${slideDuration}ms linear`;
-                progressBar.style.width = '100%';
+                bar.style.transition = `width ${displayTime}ms linear`;
+                bar.style.width = '100%';
             }, 50);
         }
 
-        function switchSlide() {
-            slides[currentSlideIndex].classList.remove('active');
-            currentSlideIndex = (currentSlideIndex + 1) % slides.length;
-            slides[currentSlideIndex].classList.add('active');
-            resetProgressBar();
+        function rotateDashboard() {
+            slides[activeIdx].classList.remove('active');
+            activeIdx = (activeIdx + 1) % slides.length;
+            slides[activeIdx].classList.add('active');
+            animateProgressBar();
         }
 
-        // Start der automatischen Rotation
-        resetProgressBar();
-        setInterval(switchSlide, slideDuration);
-
-        // Daten-Fetch Logik (API-Abruf)
-        async function fetchWMData() {
-            try {
-                // Beispielhafter API-Aufruf (z.B. an die OpenLigaDB oder freie Feeds)
-                // const response = await fetch('https://api.openligadb.de/getmatchdata/wm2026');
-                // const data = await response.json();
-                // Hier würde das Parsen und Rendern der Tabellen & Live-Spiele erfolgen.
-                console.log("WM Daten erfolgreich aktualisiert.");
-            } catch (error) {
-                console.error("Fehler beim Abruf der Live-Daten:", error);
-            }
-        }
-
-        // Alle 60 Sekunden echte Live-Daten im Hintergrund nachladen
-        setInterval(fetchWMData, 60000);
-        fetchWMData();
+        // Steuerung initialisieren
+        animateProgressBar();
+        setInterval(rotateDashboard, displayTime);
     </script>
 </body>
 </html>
