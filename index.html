@@ -149,4 +149,97 @@
             </div>
             <div class="ko-column" id="ko-4">
                 <div class="ko-header">Viertelfinale</div>
-                <div class="ko-match"><div class="match-meta">
+                <div class="ko-match"><div class="match-meta">Spiel 97</div>TBD <span class="score">-</span><br>TBD <span class="score">-</span></div>
+            </div>
+            <div class="ko-column" id="ko-2">
+                <div class="ko-header">Halbfinale</div>
+                <div class="ko-match"><div class="match-meta">Spiel 101</div>TBD <span class="score">-</span><br>TBD <span class="score">-</span></div>
+            </div>
+            <div class="ko-column" style="justify-content: center;">
+                <div class="ko-match final-box">
+                    <div class="match-meta" style="color: #a16207; font-weight: bold;">FINALE • 19. JULI</div>
+                    <div style="text-align: center; font-weight: 900; padding: 10px 0; font-size: 13px;">
+                        NEW YORK<br><span id="weltmeister-name" style="color:var(--ts-accent)">🏆 TBD 🏆</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 1. UHRZEIT-LOGIK (Muss als allererstes laufen)
+        function updateClock() {
+            document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('de-DE');
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // 2. WM-DATA DEFINITION
+        const wmDaten = {
+            A: [ {name: "Mexiko", sp: 1, tore: "2:1", pkt: 3}, {name: "USA", sp: 1, tore: "1:1", pkt: 1}, {name: "Kanada", sp: 1, tore: "1:1", pkt: 1}, {name: "Ghana", sp: 1, tore: "1:2", pkt: 0} ],
+            B: [ {name: "England", sp: 1, tore: "3:0", pkt: 3}, {name: "Katar", sp: 1, tore: "1:1", pkt: 1}, {name: "Iran", sp: 1, tore: "1:1", pkt: 1}, {name: "Südkorea", sp: 1, tore: "0:3", pkt: 0} ],
+            C: [ {name: "Argentinien", sp: 1, tore: "2:0", pkt: 3}, {name: "Schweden", sp: 1, tore: "1:1", pkt: 1}, {name: "Japan", sp: 1, tore: "1:1", pkt: 1}, {name: "Neuseeland", sp: 1, tore: "0:2", pkt: 0} ],
+            D: [ {name: "Frankreich", sp: 1, tore: "4:1", pkt: 3}, {name: "Kolumbien", sp: 1, tore: "2:2", pkt: 1}, {name: "Polen", sp: 1, tore: "2:2", pkt: 1}, {name: "Ägypten", sp: 1, tore: "1:4", pkt: 0} ],
+            E: [ {name: "Deutschland", sp: 1, tore: "1:0", pkt: 3}, {name: "Ecuador", sp: 1, tore: "0:0", pkt: 1}, {name: "Elfenbeinküste", sp: 1, tore: "0:0", pkt: 1}, {name: "Curaçao", sp: 1, tore: "0:1", pkt: 0} ],
+            F: [ {name: "Belgien", sp: 1, tore: "2:1", pkt: 3}, {name: "Marokko", sp: 1, tore: "1:1", pkt: 1}, {name: "Algerien", sp: 1, tore: "1:1", pkt: 1}, {name: "Australien", sp: 1, tore: "1:2", pkt: 0} ],
+            G: [ {name: "Spanien", sp: 1, tore: "3:1", pkt: 3}, {name: "Uruguay", sp: 1, tore: "2:2", pkt: 1}, {name: "Nigeria", sp: 1, tore: "2:2", pkt: 1}, {name: "Irak", sp: 1, tore: "1:3", pkt: 0} ],
+            H: [ {name: "Portugal", sp: 1, tore: "2:0", pkt: 3}, {name: "Schottland", sp: 1, tore: "1:1", pkt: 1}, {name: "Mali", sp: 1, tore: "1:1", pkt: 1}, {name: "Honduras", sp: 1, tore: "0:2", pkt: 0} ],
+            I: [ {name: "Italien", sp: 1, tore: "1:0", pkt: 3}, {name: "Dänemark", sp: 1, tore: "1:1", pkt: 1}, {name: "Saudi-Arabien", sp: 1, tore: "1:1", pkt: 1}, {name: "Kamerun", sp: 1, tore: "0:1", pkt: 0} ],
+            J: [ {name: "Kroatien", sp: 1, tore: "4:2", pkt: 3}, {name: "Österreich", sp: 1, tore: "2:2", pkt: 1}, {name: "Tunesien", sp: 1, tore: "2:2", pkt: 1}, {name: "Oman", sp: 1, tore: "2:4", pkt: 0} ],
+            K: [ {name: "Niederlande", sp: 1, tore: "2:0", pkt: 3}, {name: "Peru", sp: 1, tore: "0:0", pkt: 1}, {name: "Serbien", sp: 1, tore: "0:0", pkt: 1}, {name: "Jamaika", sp: 1, tore: "0:2", pkt: 0} ],
+            L: [ {name: "Schweiz", sp: 1, tore: "1:1", pkt: 1}, {name: "Chile", sp: 1, tore: "1:1", pkt: 1}, {name: "Türkei", sp: 1, tore: "0:0", pkt: 1}, {name: "Panama", sp: 1, tore: "0:0", pkt: 1} ]
+        };
+
+        // 3. TABELLEN RENDERN
+        function renderTables() {
+            const letters = ["A","B","C","D","E","F","G","H","I","J","K","L"];
+            letters.forEach(l => {
+                const tbody = document.getElementById(`tbody-${l}`);
+                if (!tbody) return;
+                tbody.innerHTML = "";
+                
+                wmDaten[l].forEach((team, idx) => {
+                    const tr = document.createElement('tr');
+                    if(idx < 2) tr.className = "top-team";
+                    tr.innerHTML = `
+                        <td>${idx + 1}. ${team.name}</td>
+                        <td style="text-align:center">${team.sp}</td>
+                        <td style="text-align:center">${team.tore}</td>
+                        <td style="text-align:center; font-weight:bold;">${team.pkt}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+            document.getElementById('api-status').innerText = "API SYNC: LIVE (INTERN)";
+            document.getElementById('api-status').style.background = "rgba(22, 163, 74, 0.2)";
+        }
+
+        // 4. KIOSK SLIDER ROTATION
+        const slides = document.querySelectorAll('.slide');
+        let currentIdx = 0;
+        const viewDuration = 12000; 
+        const progressBar = document.getElementById('rotation-bar');
+
+        function startProgressAnimation() {
+            progressBar.style.transition = 'none';
+            progressBar.style.width = '0%';
+            setTimeout(() => {
+                progressBar.style.transition = `width ${viewDuration}ms linear`;
+                progressBar.style.width = '100%';
+            }, 50);
+        }
+
+        function cycleSlides() {
+            slides[currentIdx].classList.remove('active');
+            currentIdx = (currentIdx + 1) % slides.length;
+            slides[currentIdx].classList.add('active');
+            startProgressAnimation();
+        }
+
+        // 5. START DER ANWENDUNG
+        renderTables();
+        startProgressAnimation();
+        setInterval(cycleSlides, viewDuration);
+    </script>
+</body>
+</html>
