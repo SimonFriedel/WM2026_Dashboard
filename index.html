@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WM 2026 – Tagesspiegel Dashboard</title>
+    <title>WM 2026 – Live Kiosk Gruppenphase</title>
     <style>
-        /* === FARBEN & GRUNDLAYOUT (TAGESSPIEGEL-STIL) === */
+        /* === MODERNES KIOSK-DESIGN (HOHER KONTRAST) === */
         :root {
-            --ts-navy: #0f172a;
-            --ts-blue: #1e3a8a;
-            --ts-red: #b91c1c;
-            --ts-bg: #f8fafc;
-            --ts-border: #cbd5e1;
-            --ts-text: #334155;
-            --ts-highlight: #f0fdf4;
-            --ts-highlight-text: #166534;
+            --bg-main: #090d16;
+            --bg-card: #111b2d;
+            --border-color: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-green-bg: rgba(16, 185, 129, 0.15);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
 
         body {
-            background-color: var(--ts-bg);
-            color: var(--ts-text);
+            background-color: var(--bg-main);
+            color: var(--text-main);
             height: 100vh;
             overflow: hidden;
             display: flex;
@@ -30,198 +30,287 @@
 
         /* === HEADER === */
         header {
-            background-color: var(--ts-navy);
-            color: white;
+            background-color: #0c1322;
             padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 4px solid var(--ts-blue);
+            border-bottom: 3px solid var(--border-color);
         }
 
-        .header-left h1 { font-size: 26px; font-weight: 900; letter-spacing: -0.5px; text-transform: uppercase; }
-        .header-left span { font-size: 13px; color: #94a3b8; font-weight: bold; letter-spacing: 1px; }
+        .title-area h1 { font-size: 24px; font-weight: 900; letter-spacing: 0.5px; color: var(--text-main); }
+        .title-area span { font-size: 12px; color: var(--accent-cyan); font-weight: bold; text-transform: uppercase; }
 
-        .header-right { display: flex; align-items: center; gap: 15px; }
-        
-        #sync-status {
-            font-size: 11px; font-weight: bold; padding: 5px 12px; border-radius: 4px;
-            background: rgba(255,255,255,0.1); color: #fff;
-        }
-        
-        #clock {
-            font-size: 22px; font-weight: bold; font-family: monospace;
-            background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 4px;
-        }
+        .meta-area { display: flex; align-items: center; gap: 20px; }
+        #sync-badge { font-size: 11px; font-weight: bold; padding: 5px 10px; border-radius: 4px; background: #1e293b; }
+        #clock { font-size: 22px; font-weight: bold; font-family: monospace; color: var(--accent-cyan); }
 
-        /* === FORTSCHRITTSBALKEN === */
-        #progress-container { width: 100%; height: 6px; background: #e2e8f0; }
-        #progress-bar { height: 100%; width: 0%; background: var(--ts-red); transition: width linear; }
+        /* === PROGRESS BAR === */
+        #progress-container { width: 100%; height: 4px; background: #0f172a; }
+        #progress-bar { height: 100%; width: 0%; background: var(--accent-cyan); transition: width linear; }
 
-        /* === MAIN INHALT & SLIDES === */
-        main { flex: 1; position: relative; padding: 20px; }
+        /* === SLIDE CONTAINER === */
+        main { flex: 1; position: relative; padding: 15px; }
 
         .slide {
-            position: absolute; top: 20px; left: 20px; right: 20px; bottom: 20px;
-            opacity: 0; visibility: hidden; transition: opacity 0.5s ease-in-out;
-            display: grid; gap: 20px;
+            position: absolute; top: 15px; left: 15px; right: 15px; bottom: 15px;
+            opacity: 0; visibility: hidden; transition: opacity 0.6s ease-in-out;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 Spalten */
+            grid-template-rows: repeat(2, 1fr);    /* 2 Reihen = Max 8 Gruppen */
+            gap: 15px;
         }
         .slide.active { opacity: 1; visibility: visible; }
 
-        .grid-6 { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); }
-        .grid-split { grid-template-columns: 1fr 1fr; }
-
-        /* === BOXEN & TABELLEN === */
-        .ts-box {
-            background: #fff; border: 1px solid var(--ts-border);
-            border-top: 4px solid var(--ts-navy); border-radius: 4px;
-            padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            display: flex; flex-direction: column;
+        /* === GRUPPEN KARTEN === */
+        .group-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
         }
 
-        .ts-box h2 {
-            font-size: 16px; color: var(--ts-navy); margin-bottom: 12px;
-            padding-bottom: 6px; border-bottom: 2px solid var(--ts-border);
-            text-transform: uppercase;
+        .group-card h2 {
+            font-size: 14px; text-transform: uppercase; color: var(--accent-cyan);
+            border-bottom: 2px solid var(--border-color); padding-bottom: 4px; margin-bottom: 6px;
+            font-weight: 800;
         }
 
-        .ts-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        .ts-table th { background: #f1f5f9; text-align: left; padding: 8px; border: 1px solid var(--ts-border); color: var(--ts-navy); }
-        .ts-table td { padding: 8px; border: 1px solid var(--ts-border); }
-        .ts-table tr:nth-child(1) td, .ts-table tr:nth-child(2) td {
-            background-color: var(--ts-highlight); color: var(--ts-highlight-text); font-weight: bold;
+        /* === TABELLEN === */
+        .team-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 8px; }
+        .team-table th { text-align: left; color: var(--text-muted); padding: 3px; font-weight: 600; border-bottom: 1px solid var(--border-color); }
+        .team-table td { padding: 4px 3px; border-bottom: 1px solid #1e293b; }
+        .team-table tr:nth-child(1) td, .team-table tr:nth-child(2) td { 
+            background: var(--accent-green-bg); color: #34d399; font-weight: bold; 
         }
 
-        /* === SPIELPLAN-LISTEN === */
-        .match-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px; border: 1px solid var(--ts-border); border-left: 4px solid var(--ts-blue);
-            margin-bottom: 8px; background: #f8fafc; border-radius: 3px;
+        /* === SPIELPLAN-REIHEN === */
+        .matches-container { flex: 1; display: flex; flex-direction: column; gap: 4px; overflow: hidden; justify-content: flex-end; }
+        .match-row { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 3px 5px; background: #0f172a; border-radius: 3px; font-size: 10px;
+            border-left: 3px solid var(--border-color);
         }
-        .match-meta { font-size: 11px; color: #64748b; margin-bottom: 3px; }
-        .match-teams { font-size: 14px; font-weight: bold; color: var(--ts-navy); }
-        .match-score {
-            font-family: monospace; font-size: 16px; font-weight: bold;
-            background: #e2e8f0; padding: 4px 10px; border-radius: 4px;
-        }
+        .match-row.live { border-left-color: var(--accent-cyan); background: rgba(6, 182, 212, 0.05); }
+        .match-info { color: var(--text-muted); font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+        .match-teams { font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 150px; }
+        .match-score { font-family: monospace; font-weight: bold; color: var(--accent-cyan); padding-left: 5px; white-space: nowrap; }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="header-left">
-            <h1>FUSSBALL-WM 2026 — LIVE DASHBOARD</h1>
-            <span>Stabile Datenanbindung • Tagesspiegel Layout</span>
+        <div class="title-area">
+            <h1>FIFA WORLD CUP 2026</h1>
+            <span>Gruppenphase • Live-Kiosk-Modus</span>
         </div>
-        <div class="header-right">
-            <div id="sync-status">INITIALISIERE...</div>
+        <div class="meta-area">
+            <div id="sync-badge">LADE DATEN...</div>
             <div id="clock">00:00:00</div>
         </div>
     </header>
 
-    <div id="progress-container">
-        <div id="progress-bar"></div>
-    </div>
+    <div id="progress-container"><div id="progress-bar"></div></div>
 
-    <main id="dashboard-container">
+    <main id="slides-viewport">
         </main>
 
     <script>
-        // ==========================================
-        // 1. ISOLIERTE UHR (Läuft immer)
-        // ==========================================
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleTimeString('de-DE');
+        // 1. UHRZEIT
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString('de-DE');
+        }, 1000);
+
+        // 2. SLIDER CONFIG
+        let currentSlide = 0;
+        let rotationTimer;
+        const slideDuration = 15000; // 15 Sekunden Standzeit pro Seite
+
+        function startSlider() {
+            clearInterval(rotationTimer);
+            const slides = document.querySelectorAll('.slide');
+            const bar = document.getElementById('progress-bar');
+            if(slides.length <= 1) return;
+
+            function animateBar() {
+                bar.style.transition = 'none'; bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.transition = `width ${slideDuration}ms linear`;
+                    bar.style.width = '100%';
+                }, 50);
+            }
+
+            function switchSlide() {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+                animateBar();
+            }
+
+            animateBar();
+            rotationTimer = setInterval(switchSlide, slideDuration);
         }
-        setInterval(updateClock, 1000);
-        updateClock();
 
-        // ==========================================
-        // 2. DATENBANK & FALLBACK-SYSTEM
-        // ==========================================
-        // Dies ist das Grundgerüst. Es wird durch die Live-API überschrieben, 
-        // falls diese verfügbar ist. Falls nicht, garantiert es, dass der Monitor nie leer bleibt.
-        const datenbank = {
-            gruppen: {
-                A: [{team: "Mexiko", sp: 1, t: "2:1", p: 3}, {team: "USA", sp: 1, t: "1:1", p: 1}, {team: "Kanada", sp: 1, t: "1:1", p: 1}, {team: "Ghana", sp: 1, t: "1:2", p: 0}],
-                B: [{team: "England", sp: 1, t: "3:0", p: 3}, {team: "Katar", sp: 1, t: "1:1", p: 1}, {team: "Iran", sp: 1, t: "1:1", p: 1}, {team: "Südkorea", sp: 1, t: "0:3", p: 0}],
-                C: [{team: "Argentinien", sp: 1, t: "2:0", p: 3}, {team: "Schweden", sp: 1, t: "1:1", p: 1}, {team: "Japan", sp: 1, t: "1:1", p: 1}, {team: "Neuseeland", sp: 1, t: "0:2", p: 0}],
-                D: [{team: "Frankreich", sp: 1, t: "2:1", p: 3}, {team: "Kolumbien", sp: 1, t: "1:1", p: 1}, {team: "Polen", sp: 1, t: "1:1", p: 1}, {team: "Ägypten", sp: 1, t: "1:2", p: 0}],
-                E: [{team: "Deutschland", sp: 1, t: "1:0", p: 3}, {team: "Ecuador", sp: 1, t: "0:0", p: 1}, {team: "Elfenbeinküste", sp: 1, t: "0:0", p: 1}, {team: "Curaçao", sp: 1, t: "0:1", p: 0}],
-                F: [{team: "Italien", sp: 0, t: "0:0", p: 0}, {team: "Tunesien", sp: 0, t: "0:0", p: 0}, {team: "Peru", sp: 0, t: "0:0", p: 0}, {team: "Oman", sp: 0, t: "0:0", p: 0}],
-                G: [{team: "Spanien", sp: 0, t: "0:0", p: 0}, {team: "Nigeria", sp: 0, t: "0:0", p: 0}, {team: "Irak", sp: 0, t: "0:0", p: 0}, {team: "Panama", sp: 0, t: "0:0", p: 0}],
-                H: [{team: "Portugal", sp: 0, t: "0:0", p: 0}, {team: "Australien", sp: 0, t: "0:0", p: 0}, {team: "Mali", sp: 0, t: "0:0", p: 0}, {team: "Honduras", sp: 0, t: "0:0", p: 0}],
-                I: [{team: "Brasilien", sp: 0, t: "0:0", p: 0}, {team: "Ukraine", sp: 0, t: "0:0", p: 0}, {team: "Ägypten", sp: 0, t: "0:0", p: 0}, {team: "Jamaika", sp: 0, t: "0:0", p: 0}],
-                J: [{team: "Belgien", sp: 0, t: "0:0", p: 0}, {team: "Kamerun", sp: 0, t: "0:0", p: 0}, {team: "Schottland", sp: 0, t: "0:0", p: 0}, {team: "Costa Rica", sp: 0, t: "0:0", p: 0}],
-                K: [{team: "Niederlande", sp: 0, t: "0:0", p: 0}, {team: "Österreich", sp: 0, t: "0:0", p: 0}, {team: "Algerien", sp: 0, t: "0:0", p: 0}, {team: "Katar", sp: 0, t: "0:0", p: 0}],
-                L: [{team: "Kroatien", sp: 0, t: "0:0", p: 0}, {team: "Uruguay", sp: 0, t: "0:0", p: 0}, {team: "Türkei", sp: 0, t: "0:0", p: 0}, {team: "Fidschi", sp: 0, t: "0:0", p: 0}]
-            },
-            spieleGespielt: [
-                { meta: "Gruppe A • 11. Juni", match: "Mexiko – Kanada", res: "2 : 1" },
-                { meta: "Gruppe A • 12. Juni", match: "USA – Ghana", res: "1 : 1" },
-                { meta: "Gruppe E • 14. Juni", match: "Deutschland – Curaçao", res: "1 : 0" },
-                { meta: "Gruppe E • 14. Juni", match: "Ecuador – Elfenbeinküste", res: "0 : 0" },
-                { meta: "Gruppe C • 16. Juni", match: "Argentinien – Neuseeland", res: "2 : 0" }
-            ],
-            spieleKommend: [
-                { meta: "Gruppe A • Mi, 17. Juni • 18:00 Uhr", match: "Mexiko – USA", res: "- : -" },
-                { meta: "Gruppe E • Sa, 20. Juni • 22:00 Uhr", match: "Deutschland – Elfenbeinküste", res: "- : -" },
-                { meta: "Gruppe E • So, 21. Juni • 02:00 Uhr", match: "Ecuador – Curaçao", res: "- : -" },
-                { meta: "Gruppe E • Do, 25. Juni • 22:00 Uhr", match: "Ecuador – Deutschland", res: "- : -" }
-            ]
-        };
+        // 3. DATENVERARBEITUNG & TABELLENBERECHNUNG
+        async function updateData() {
+            const badge = document.getElementById('sync-badge');
+            badge.innerText = "SYNC...";
+            badge.style.color = var(--accent-cyan);
 
-        // ==========================================
-        // 3. UI GENERATOR (Baut HTML fehlerfrei auf)
-        // ==========================================
-        function buildDashboard() {
-            const container = document.getElementById('dashboard-container');
-            container.innerHTML = ''; // Vorherigen Inhalt löschen
+            try {
+                // Direktabruf von OpenLigaDB (CORS-kompatibel)
+                const res = await fetch('https://api.openligadb.de/getmatchdata/wm2026');
+                if(!res.ok) throw new Error("API Fehler");
+                const matches = await res.json();
 
-            // SLIDE 1: SPIELÜBERSICHT
-            let slide1 = `<div class="slide active grid-split" id="slide-0">`;
-            
-            // Gespielte Spiele
-            slide1 += `<div class="ts-box"><h2>Zuletzt gespielte Begegnungen</h2><div>`;
-            datenbank.spieleGespielt.forEach(s => {
-                slide1 += `
-                <div class="match-row" style="border-left-color: #64748b;">
-                    <div><div class="match-meta">${s.meta}</div><div class="match-teams">${s.match}</div></div>
-                    <div class="match-score">${s.res}</div>
-                </div>`;
-            });
-            slide1 += `</div></div>`;
+                if(!matches || matches.length === 0) {
+                    badge.innerText = "KEINE WM-DATEN GEFUNDEN";
+                    return;
+                }
 
-            // Kommende Spiele
-            slide1 += `<div class="ts-box"><h2>Anstehende Spiele (Vorschau)</h2><div>`;
-            datenbank.spieleKommend.forEach(s => {
-                slide1 += `
-                <div class="match-row" style="border-left-color: var(--ts-red);">
-                    <div><div class="match-meta">${s.meta}</div><div class="match-teams">${s.match}</div></div>
-                    <div class="match-score" style="background:#cbd5e1;">${s.res}</div>
-                </div>`;
-            });
-            slide1 += `</div></div></div>`;
-            container.innerHTML += slide1;
+                // Datenstrukturen vorbereiten
+                let groupMap = {};
 
-            // SLIDE 2 & 3: TABELLEN (Dynamisch iterieren)
-            const gruppenKeys = Object.keys(datenbank.gruppen);
-            for(let i = 0; i < 2; i++) {
-                let slide = `<div class="slide grid-6" id="slide-${i+1}">`;
-                let slice = i === 0 ? gruppenKeys.slice(0, 6) : gruppenKeys.slice(6, 12);
-                
-                slice.forEach(g => {
-                    let topBorder = g === 'E' ? 'border-top-color: var(--ts-red);' : '';
-                    let title = g === 'E' ? `GRUPPE E (Deutschland)` : `GRUPPE ${g}`;
+                matches.forEach(m => {
+                    let gName = m.group?.groupName;
+                    // Nur Gruppen berücksichtigen (K.O. Spiele ignorieren)
+                    if (!gName || !gName.toLowerCase().includes("gruppe")) return;
+
+                    if (!groupMap[gName]) {
+                        groupMap[gName] = { teams: {}, matches: [] };
+                    }
+
+                    // Spiel speichern
+                    groupMap[gName].matches.push(m);
+
+                    // Teams registrieren
+                    let t1 = m.team1.teamName;
+                    let t2 = m.team2.teamName;
+                    if (!groupMap[gName].teams[t1]) groupMap[gName].teams[t1] = { name: t1, sp: 0, gf: 0, ga: 0, pkt: 0 };
+                    if (!groupMap[gName].teams[t2]) groupMap[gName].teams[t2] = { name: t2, sp: 0, gf: 0, ga: 0, pkt: 0 };
+
+                    // Mathematische Live-Tabellenberechnung anhand der Spielergebnisse
+                    if (m.matchIsFinished && m.matchResults && m.matchResults.length > 0) {
+                        // Nutze Endergebnis (resultTypeID === 2)
+                        let endResult = m.matchResults.find(r => r.resultTypeID === 2) || m.matchResults[0];
+                        let s1 = endResult.pointsTeam1;
+                        let s2 = endResult.pointsTeam2;
+
+                        groupMap[gName].teams[t1].sp++;
+                        groupMap[gName].teams[t2].sp++;
+                        groupMap[gName].teams[t1].gf += s1; groupMap[gName].teams[t1].ga += s2;
+                        groupMap[gName].teams[t2].gf += s2; groupMap[gName].teams[t2].ga += s1;
+
+                        if (s1 > s2) { groupMap[gName].teams[t1].pkt += 3; }
+                        else if (s2 > s1) { groupMap[gName].teams[t2].pkt += 3; }
+                        else { groupMap[gName].teams[t1].pkt += 1; groupMap[gName].teams[t2].pkt += 1; }
+                    }
+                });
+
+                renderDashboard(groupMap);
+                badge.innerText = "LIVE AKTUALISIERT";
+                badge.style.color = "var(--accent-green)";
+
+            } catch (err) {
+                console.error(err);
+                badge.innerText = "SYNC FEHLER (ERNEUT IN 10 MIN)";
+                badge.style.color = "#ef4444";
+            }
+        }
+
+        // 4. GENERIERUNG DES CODES (8 Gruppen pro Seite)
+        function renderDashboard(groupMap) {
+            const viewport = document.getElementById('slides-viewport');
+            viewport.innerHTML = "";
+
+            // Gruppen alphabetisch sortieren (Gruppe A, B, C...)
+            const sortedGroupNames = Object.keys(groupMap).sort();
+
+            // Aufteilen in Seiten à maximal 8 Gruppen
+            let pages = [];
+            for (let i = 0; i < sortedGroupNames.length; i += 8) {
+                pages.push(sortedGroupNames.slice(i, i + 8));
+            }
+
+            pages.forEach((pageGroups, pageIdx) => {
+                const slide = document.createElement('div');
+                slide.className = `slide ${pageIdx === 0 ? 'active' : ''}`;
+                slide.id = `slide-${pageIdx}`;
+
+                pageGroups.forEach(gName => {
+                    const card = document.createElement('div');
+                    card.className = "group-card";
+
+                    // Titel
+                    let h2 = document.createElement('h2');
+                    h2.innerText = gName;
+                    card.appendChild(h2);
+
+                    // Tabelle berechnen und sortieren
+                    let tableBody = "";
+                    let sortedTeams = Object.values(groupMap[gName].teams).sort((a,b) => {
+                        return b.pkt - a.pkt || (b.gf - b.ga) - (a.gf - a.ga) || b.gf - a.gf || a.name.localeCompare(b.name);
+                    });
+
+                    sortedTeams.forEach((t, index) => {
+                        tableBody += `<tr>
+                            <td>${index + 1}. ${t.name}</td>
+                            <td style="text-align:center">${t.sp}</td>
+                            <td style="text-align:center">${t.gf}:${t.ga}</td>
+                            <td style="text-align:center; font-weight:bold">${t.pkt}</td>
+                        </tr>`;
+                    });
+
+                    let tableHTML = `<table class="team-table">
+                        <thead><tr><th>Team</th><th style="text-align:center">Sp</th><th style="text-align:center">Tore</th><th style="text-align:center">Pkt</th></tr></thead>
+                        <tbody>${tableBody}</tbody>
+                    </table>`;
+                    card.insertAdjacentHTML('beforeend', tableHTML);
+
+                    // Spiele auflisten
+                    let matchesHTML = `<div class="matches-container">`;
+                    // Sortiere Spiele chronologisch nach Datum
+                    let sortedMatches = groupMap[gName].matches.sort((a,b) => new Date(a.matchDateTime) - new Date(b.matchDateTime));
                     
-                    slide += `<div class="ts-box" style="${topBorder}"><h2>${title}</h2>
-                              <table class="ts-table">
-                              <thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody>`;
-                    
-                    datenbank.gruppen[g].forEach((team) => {
-                        slide += `<tr>
-                            <td>${team.team}</td>
-                            <td style="text-align:center">${team.sp}</td>
-                            <td style="text-align:center">${team.t}</td>
-                            <td style="
+                    sortedMatches.forEach(m => {
+                        let date = new Date(m.matchDateTime);
+                        let dateStr = date.toLocaleDateString('de-DE', {day: '2-digit', month: '2-digit'}) + " " + date.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'});
+                        
+                        let score = "- : -";
+                        if(m.matchIsFinished && m.matchResults.length > 0){
+                            let endRes = m.matchResults.find(r => r.resultTypeID === 2) || m.matchResults[0];
+                            score = `${endRes.pointsTeam1} : ${endRes.pointsTeam2}`;
+                        }
+
+                        matchesHTML += `
+                            <div class="match-row ${!m.matchIsFinished && new Date() >= date ? 'live' : ''}">
+                                <div>
+                                    <div class="match-info">${dateStr} • ${m.location?.locationCity || 'WM-Stadion'}</div>
+                                    <div class="match-teams">${m.team1.shortName || m.team1.teamName} - ${m.team2.shortName || m.team2.teamName}</div>
+                                </div>
+                                <div class="match-score">${score}</div>
+                            </div>`;
+                    });
+
+                    matchesHTML += `</div>`;
+                    card.insertAdjacentHTML('beforeend', matchesHTML);
+                    slide.appendChild(card);
+                });
+
+                viewport.appendChild(slide);
+            });
+
+            // Slider starten
+            currentSlide = 0;
+            startSlider();
+        }
+
+        // 5. START & AKTUALISIERUNGS-SCHLEIFE (Exakt alle 10 Minuten)
+        updateData();
+        setInterval(updateData, 600000); // 10 Minuten = 600.000 ms
+    </script>
+</body>
