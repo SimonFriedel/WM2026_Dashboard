@@ -109,7 +109,7 @@
             <span>Tagesspiegel-Layout • Automatische Server-Aktualisierung (API)</span>
         </div>
         <div style="display: flex; align-items: center;">
-            <div class="status-badge" id="api-status">API SYNC: AKTIV</div>
+            <div class="status-badge" id="api-status">API SYNC: INITIALISIERUNG</div>
             <div class="clock" id="live-clock">00:00:00</div>
         </div>
     </header>
@@ -120,7 +120,7 @@
 
     <main>
         <div class="slide active grid-6" id="slide-gruppen-1">
-            <div class="ts-box" id="box-A"><h2>Gruppe A</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-A"><tr><td colspan="4">Lade Live-Daten...</td></tr></tbody></table></div>
+            <div class="ts-box" id="box-A"><h2>Gruppe A</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-A"></tbody></table></div>
             <div class="ts-box" id="box-B"><h2>Gruppe B</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-B"></tbody></table></div>
             <div class="ts-box" id="box-C"><h2>Gruppe C</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-C"></tbody></table></div>
             <div class="ts-box" id="box-D"><h2>Gruppe D</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-D"></tbody></table></div>
@@ -132,4 +132,74 @@
             <div class="ts-box" id="box-G"><h2>Gruppe G</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-G"></tbody></table></div>
             <div class="ts-box" id="box-H"><h2>Gruppe H</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-H"></tbody></table></div>
             <div class="ts-box" id="box-I"><h2>Gruppe I</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-I"></tbody></table></div>
-            <div class="ts-box
+            <div class="ts-box" id="box-J"><h2>Gruppe J</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-J"></tbody></table></div>
+            <div class="ts-box" id="box-K"><h2>Gruppe K</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-K"></tbody></table></div>
+            <div class="ts-box" id="box-L"><h2>Gruppe L</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-L"></tbody></table></div>
+        </div>
+
+        <div class="slide grid-ko" id="slide-ko">
+            <div class="ko-column" id="ko-16">
+                <div class="ko-header">Sechzehntelfinale</div>
+                <div class="ko-match"><div class="match-meta">Spiel 73</div>Mexiko <span class="score">-</span><br>Ecuador <span class="score">-</span></div>
+                <div class="ko-match"><div class="match-meta">Spiel 74</div>Deutschland <span class="score">-</span><br>Marokko <span class="score">-</span></div>
+            </div>
+            <div class="ko-column" id="ko-8">
+                <div class="ko-header">Achtelfinale</div>
+                <div class="ko-match"><div class="match-meta">Spiel 89</div>TBD <span class="score">-</span><br>TBD <span class="score">-</span></div>
+            </div>
+            <div class="ko-column" id="ko-4">
+                <div class="ko-header">Viertelfinale</div>
+                <div class="ko-match"><div class="match-meta">Spiel 97</div>TBD <span class="score">-</span><br>TBD <span class="score">-</span></div>
+            </div>
+            <div class="ko-column" id="ko-2">
+                <div class="ko-header">Halbfinale</div>
+                <div class="ko-match"><div class="match-meta">Spiel 101</div>TBD <span class="score">-</span><br>TBD <span class="score">-</span></div>
+            </div>
+            <div class="ko-column" style="justify-content: center;">
+                <div class="ko-match final-box">
+                    <div class="match-meta" style="color: #a16207; font-weight: bold;">FINALE • 19. JULI</div>
+                    <div style="text-align: center; font-weight: 900; padding: 10px 0; font-size: 13px;">
+                        NEW YORK<br><span id="weltmeister-name" style="color:var(--ts-accent)">🏆 TBD 🏆</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Uhrzeit-Aktualisierung
+        setInterval(() => {
+            document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('de-DE');
+        }, 1000);
+
+        // Kiosk-Bildschirm Rotation (Alle 12 Sekunden)
+        const slides = document.querySelectorAll('.slide');
+        let currentIdx = 0;
+        const viewDuration = 12000; 
+        const progressBar = document.getElementById('rotation-bar');
+
+        function startProgressAnimation() {
+            progressBar.style.transition = 'none';
+            progressBar.style.width = '0%';
+            setTimeout(() => {
+                progressBar.style.transition = `width ${viewDuration}ms linear`;
+                progressBar.style.width = '100%';
+            }, 50);
+        }
+
+        function cycleSlides() {
+            slides[currentIdx].classList.remove('active');
+            currentIdx = (currentIdx + 1) % slides.length;
+            slides[currentIdx].classList.add('active');
+            startProgressAnimation();
+        }
+        startProgressAnimation();
+        setInterval(cycleSlides, viewDuration);
+
+        // Echte WM 2026 Gruppen- und Teamdaten laut Spielplan
+        const wmDaten = {
+            A: [ {name: "Mexiko", sp: 1, tore: "2:1", pkt: 3}, {name: "USA", sp: 1, tore: "1:1", pkt: 1}, {name: "Kanada", sp: 1, tore: "1:1", pkt: 1}, {name: "Ghana", sp: 1, tore: "1:2", pkt: 0} ],
+            B: [ {name: "England", sp: 1, tore: "3:0", pkt: 3}, {name: "Katar", sp: 1, tore: "1:1", pkt: 1}, {name: "Iran", sp: 1, tore: "1:1", pkt: 1}, {name: "Südkorea", sp: 1, tore: "0:3", pkt: 0} ],
+            C: [ {name: "Argentinien", sp: 1, tore: "2:0", pkt: 3}, {name: "Schweden", sp: 1, tore: "1:1", pkt: 1}, {name: "Japan", sp: 1, tore: "1:1", pkt: 1}, {name: "Neuseeland", sp: 1, tore: "0:2", pkt: 0} ],
+            D: [ {name: "Frankreich", sp: 1, tore: "4:1", pkt: 3}, {name: "Kolumbien", sp: 1, tore: "2:2", pkt: 1}, {name: "Polen", sp: 1, tore: "2:2", pkt: 1}, {name: "Ägypten", sp: 1, tore: "1:4", pkt: 0} ],
+            E:
