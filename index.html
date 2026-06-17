@@ -3,26 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WM 2026 – Offizieller Live-Spielplan (24 Zoll Kiosk)</title>
+    <title>WM 2026 – Tagesspiegel Dashboard</title>
     <style>
+        /* === FARBEN & GRUNDLAYOUT (TAGESSPIEGEL-STIL) === */
         :root {
             --ts-navy: #0f172a;
-            --ts-blue: #1d4ed8;
+            --ts-blue: #1e3a8a;
+            --ts-red: #b91c1c;
             --ts-bg: #f8fafc;
-            --ts-card: #ffffff;
             --ts-border: #cbd5e1;
             --ts-text: #334155;
-            --ts-accent: #b91c1c;
-            --ts-green: #e2f6ea;
-            --ts-green-text: #15803d;
+            --ts-highlight: #f0fdf4;
+            --ts-highlight-text: #166534;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Arial', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; }
 
         body {
             background-color: var(--ts-bg);
-            background-image: radial-gradient(var(--ts-border) 1px, transparent 0);
-            background-size: 24px 24px;
             color: var(--ts-text);
             height: 100vh;
             overflow: hidden;
@@ -30,6 +28,7 @@
             flex-direction: column;
         }
 
+        /* === HEADER === */
         header {
             background-color: var(--ts-navy);
             color: white;
@@ -37,286 +36,192 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 5px solid var(--ts-blue);
+            border-bottom: 4px solid var(--ts-blue);
         }
 
-        .header-title h1 { font-size: 26px; font-weight: 900; text-transform: uppercase; }
-        .header-title span { font-size: 13px; color: #94a3b8; text-transform: uppercase; font-weight: bold; }
+        .header-left h1 { font-size: 26px; font-weight: 900; letter-spacing: -0.5px; text-transform: uppercase; }
+        .header-left span { font-size: 13px; color: #94a3b8; font-weight: bold; letter-spacing: 1px; }
 
-        .status-badge {
-            background: rgba(22, 163, 74, 0.2);
-            color: #4ade80;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
+        .header-right { display: flex; align-items: center; gap: 15px; }
+        
+        #sync-status {
+            font-size: 11px; font-weight: bold; padding: 5px 12px; border-radius: 4px;
+            background: rgba(255,255,255,0.1); color: #fff;
+        }
+        
+        #clock {
+            font-size: 22px; font-weight: bold; font-family: monospace;
+            background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 4px;
         }
 
-        .clock { font-size: 22px; font-weight: bold; font-family: monospace; background: rgba(255,255,255,0.08); padding: 6px 18px; border-radius: 4px; }
+        /* === FORTSCHRITTSBALKEN === */
+        #progress-container { width: 100%; height: 6px; background: #e2e8f0; }
+        #progress-bar { height: 100%; width: 0%; background: var(--ts-red); transition: width linear; }
 
-        .progress-container { width: 100%; height: 5px; background: #e2e8f0; }
-        .progress-bar { height: 100%; width: 0%; background: var(--ts-blue); transition: width linear; }
-
-        main { flex: 1; position: relative; padding: 15px; }
+        /* === MAIN INHALT & SLIDES === */
+        main { flex: 1; position: relative; padding: 20px; }
 
         .slide {
-            position: absolute;
-            top: 15px; left: 15px; right: 15px; bottom: 15px;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.4s ease-in-out;
-            display: grid;
-            gap: 15px;
+            position: absolute; top: 20px; left: 20px; right: 20px; bottom: 20px;
+            opacity: 0; visibility: hidden; transition: opacity 0.5s ease-in-out;
+            display: grid; gap: 20px;
         }
-
         .slide.active { opacity: 1; visibility: visible; }
-        
+
         .grid-6 { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); }
         .grid-split { grid-template-columns: 1fr 1fr; }
-        .grid-ko { grid-template-columns: repeat(5, 1fr); align-items: stretch; }
 
+        /* === BOXEN & TABELLEN === */
         .ts-box {
-            background: var(--ts-card);
-            border: 1px solid var(--ts-border);
-            border-top: 5px solid var(--ts-navy);
-            border-radius: 4px;
-            padding: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            background: #fff; border: 1px solid var(--ts-border);
+            border-top: 4px solid var(--ts-navy); border-radius: 4px;
+            padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column;
         }
 
-        .ts-box h2 { font-size: 14px; color: var(--ts-navy); padding-bottom: 4px; border-bottom: 2px solid var(--ts-navy); text-transform: uppercase; font-weight: 800; margin-bottom: 6px; }
+        .ts-box h2 {
+            font-size: 16px; color: var(--ts-navy); margin-bottom: 12px;
+            padding-bottom: 6px; border-bottom: 2px solid var(--ts-border);
+            text-transform: uppercase;
+        }
 
-        .ts-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .ts-table th { background: #f1f5f9; color: var(--ts-navy); text-align: left; padding: 4px; font-weight: bold; border: 1px solid var(--ts-border); }
-        .ts-table td { padding: 4px; border: 1px solid var(--ts-border); }
-        .ts-table tr.top-team td { background-color: var(--ts-green); color: var(--ts-green-text); font-weight: bold; }
+        .ts-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .ts-table th { background: #f1f5f9; text-align: left; padding: 8px; border: 1px solid var(--ts-border); color: var(--ts-navy); }
+        .ts-table td { padding: 8px; border: 1px solid var(--ts-border); }
+        .ts-table tr:nth-child(1) td, .ts-table tr:nth-child(2) td {
+            background-color: var(--ts-highlight); color: var(--ts-highlight-text); font-weight: bold;
+        }
 
-        .match-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
-        .match-item { background: #f8fafc; border: 1px solid var(--ts-border); border-left: 4px solid var(--ts-blue); padding: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
-        .match-item.done { border-left-color: #64748b; }
-        .match-details { font-size: 11px; color: #64748b; }
-        .match-teams { font-size: 13px; font-weight: bold; color: var(--ts-navy); margin-top: 2px; }
-        .match-score { font-family: monospace; font-size: 14px; font-weight: bold; background: #e2e8f0; padding: 2px 8px; border-radius: 4px; min-width: 45px; text-align: center; }
-
-        .ko-column { display: flex; flex-direction: column; justify-content: space-around; height: 100%; }
-        .ko-header { font-size: 11px; font-weight: 900; text-align: center; background: var(--ts-navy); color: white; padding: 5px; border-radius: 3px; text-transform: uppercase; margin-bottom: 5px; }
-        
-        .ko-match { background: white; border: 1px solid var(--ts-border); border-left: 4px solid var(--ts-blue); padding: 6px; border-radius: 3px; font-size: 11px; }
-        .ko-match .score { float: right; font-weight: bold; color: var(--ts-blue); }
-        .ko-match.final-box { border: 2px solid #eab308; background: #fefce8; border-left: 6px solid #eab308; }
-        .match-meta { font-size: 9px; color: #94a3b8; margin-bottom: 2px; }
+        /* === SPIELPLAN-LISTEN === */
+        .match-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px; border: 1px solid var(--ts-border); border-left: 4px solid var(--ts-blue);
+            margin-bottom: 8px; background: #f8fafc; border-radius: 3px;
+        }
+        .match-meta { font-size: 11px; color: #64748b; margin-bottom: 3px; }
+        .match-teams { font-size: 14px; font-weight: bold; color: var(--ts-navy); }
+        .match-score {
+            font-family: monospace; font-size: 16px; font-weight: bold;
+            background: #e2e8f0; padding: 4px 10px; border-radius: 4px;
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="header-title">
-            <h1>FUSSBALL-WM 2026 — PASSIV-MONITOR</h1>
-            <span>Echte Daten & Tabellen • Tagesspiegel Layout-Sonderedition</span>
+        <div class="header-left">
+            <h1>FUSSBALL-WM 2026 — LIVE DASHBOARD</h1>
+            <span>Stabile Datenanbindung • Tagesspiegel Layout</span>
         </div>
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div class="status-badge" id="api-status">LIVE-MODUS AKTIV</div>
-            <div class="clock" id="live-clock">00:00:00</div>
+        <div class="header-right">
+            <div id="sync-status">INITIALISIERE...</div>
+            <div id="clock">00:00:00</div>
         </div>
     </header>
 
-    <div class="progress-container">
-        <div class="progress-bar" id="rotation-bar"></div>
+    <div id="progress-container">
+        <div id="progress-bar"></div>
     </div>
 
-    <main>
-        <div class="slide active grid-split" id="slide-ticker">
-            <div class="ts-box">
-                <h2>Zuletzt gespielte Begegnungen</h2>
-                <div class="match-list" id="played-matches">
-                    <div class="match-item done">
-                        <div>
-                            <div class="match-details">Gruppe A • Do, 11. Juni • Mexiko-Stadt</div>
-                            <div class="match-teams">Mexiko – Kanada</div>
-                        </div>
-                        <div class="match-score">2 : 1</div>
-                    </div>
-                    <div class="match-item done">
-                        <div>
-                            <div class="match-details">Gruppe A • Fr, 12. Juni • Los Angeles</div>
-                            <div class="match-teams">USA – Ghana</div>
-                        </div>
-                        <div class="match-score">1 : 1</div>
-                    </div>
-                    <div class="match-item done">
-                        <div>
-                            <div class="match-details">Gruppe E • So, 14. Juni • Houston</div>
-                            <div class="match-teams">Deutschland – Curaçao</div>
-                        </div>
-                        <div class="match-score">1 : 0</div>
-                    </div>
-                    <div class="match-item done">
-                        <div>
-                            <div class="match-details">Gruppe E • So, 14. Juni • Dallas</div>
-                            <div class="match-teams">Ecuador – Elfenbeinküste</div>
-                        </div>
-                        <div class="match-score">0 : 0</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="ts-box">
-                <h2>Anstehende Spiele (Nächste Termine)</h2>
-                <div class="match-list" id="upcoming-matches">
-                    <div class="match-item">
-                        <div>
-                            <div class="match-details">Gruppe A • Mi, 17. Juni • 18:00 Uhr • Atlanta</div>
-                            <div class="match-teams">Mexiko – USA</div>
-                        </div>
-                        <div class="match-score" style="background:#cbd5e1; font-size:12px;">-- : --</div>
-                    </div>
-                    <div class="match-item">
-                        <div>
-                            <div class="match-details">Gruppe E • Sa, 20. Juni • 22:00 Uhr • Toronto</div>
-                            <div class="match-teams">Deutschland – Elfenbeinküste</div>
-                        </div>
-                        <div class="match-score" style="background:#cbd5e1; font-size:12px;">-- : --</div>
-                    </div>
-                    <div class="match-item">
-                        <div>
-                            <div class="match-details">Gruppe E • So, 21. Juni • 02:00 Uhr • Kansas City</div>
-                            <div class="match-teams">Ecuador – Curaçao</div>
-                        </div>
-                        <div class="match-score" style="background:#cbd5e1; font-size:12px;">-- : --</div>
-                    </div>
-                    <div class="match-item">
-                        <div>
-                            <div class="match-details">Gruppe E • Do, 25. Juni • 22:00 Uhr • New York</div>
-                            <div class="match-teams">Ecuador – Deutschland</div>
-                        </div>
-                        <div class="match-score" style="background:#cbd5e1; font-size:12px;">-- : --</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="slide grid-6" id="slide-gruppen-1">
-            <div class="ts-box" id="box-A"><h2>Gruppe A</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-A"></tbody></table></div>
-            <div class="ts-box" id="box-B"><h2>Gruppe B</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-B"></tbody></table></div>
-            <div class="ts-box" id="box-C"><h2>Gruppe C</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-C"></tbody></table></div>
-            <div class="ts-box" id="box-D"><h2>Gruppe D</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-D"></tbody></table></div>
-            <div class="ts-box" id="box-E" style="border-top-color: var(--ts-accent)"><h2>Gruppe E (Deutschland)</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-E"></tbody></table></div>
-            <div class="ts-box" id="box-F"><h2>Gruppe F</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-F"></tbody></table></div>
-        </div>
-
-        <div class="slide grid-6" id="slide-gruppen-2">
-            <div class="ts-box" id="box-G"><h2>Gruppe G</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-G"></tbody></table></div>
-            <div class="ts-box" id="box-H"><h2>Gruppe H</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-H"></tbody></table></div>
-            <div class="ts-box" id="box-I"><h2>Gruppe I</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-I"></tbody></table></div>
-            <div class="ts-box" id="box-J"><h2>Gruppe J</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-J"></tbody></table></div>
-            <div class="ts-box" id="box-K"><h2>Gruppe K</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-K"></tbody></table></div>
-            <div class="ts-box" id="box-L"><h2>Gruppe L</h2><table class="ts-table"><thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody id="tbody-L"></tbody></table></div>
-        </div>
-
-        <div class="slide grid-ko" id="slide-ko">
-            <div class="ko-column" id="ko-16">
-                <div class="ko-header">16tel-Finale</div>
-                <div class="ko-match"><div class="match-meta">Spiel 73 • Vancouver</div>Mexiko <span class="score">-</span><br>Ecuador <span class="score">-</span></div>
-                <div class="ko-match"><div class="match-meta">Spiel 74 • New York</div>Deutschland <span class="score">-</span><br>Marokko <span class="score">-</span></div>
-            </div>
-            <div class="ko-column" id="ko-8">
-                <div class="ko-header">Achtelfinale</div>
-                <div class="ko-match"><div class="match-meta">Spiel 89</div>TBD <span class="score">-</span><br>TBD <span class="score">-</span></div>
-            </div>
-            <div class="ko-column" id="ko-4">
-                <div class="ko-header">Viertelfinale</div>
-                <div class="ko-match"><div class="match-meta">Spiel 97</div>TBD <span class="score">-</span><br>TBD <span class="score">-</span></div>
-            </div>
-            <div class="ko-column" id="ko-2">
-                <div class="ko-header">Halbfinale</div>
-                <div class="ko-match"><div class="match-meta">Spiel 101</div>TBD <span class="score">-</span><br>TBD <span class="score">-</span></div>
-            </div>
-            <div class="ko-column" style="justify-content: center;">
-                <div class="ko-match final-box">
-                    <div class="match-meta" style="color: #a16207; font-weight: bold;">FINALE • 19. JULI</div>
-                    <div style="text-align: center; font-weight: 900; padding: 10px 0; font-size: 13px;">
-                        NEW YORK (METLIFE STADIUM)<br><br><span id="weltmeister-name" style="color:var(--ts-accent); font-size:16px;">🏆 TBD 🏆</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
+    <main id="dashboard-container">
+        </main>
 
     <script>
-        // 1. UHRZEIT-STEUERUNG (Isoliert, läuft garantiert immer)
+        // ==========================================
+        // 1. ISOLIERTE UHR (Läuft immer)
+        // ==========================================
         function updateClock() {
-            document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('de-DE');
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString('de-DE');
         }
         setInterval(updateClock, 1000);
         updateClock();
 
-        // 2. ABSOLUT KORREKTE GRUPPENDATEN (Echte Zusammensetzung WM 2026)
-        const wmDaten = {
-            A: [ {name: "Mexiko", sp: 1, tore: "2:1", pkt: 3}, {name: "USA", sp: 1, tore: "1:1", pkt: 1}, {name: "Kanada", sp: 1, tore: "1:1", pkt: 1}, {name: "Ghana", sp: 1, tore: "1:2", pkt: 0} ],
-            B: [ {name: "Spanien", sp: 0, tore: "0:0", pkt: 0}, {name: "Kamerun", sp: 0, tore: "0:0", pkt: 0}, {name: "Kasachstan", sp: 0, tore: "0:0", pkt: 0}, {name: "Neuseeland", sp: 0, tore: "0:0", pkt: 0} ],
-            C: [ {name: "Argentinien", sp: 0, tore: "0:0", pkt: 0}, {name: "Schweden", sp: 0, tore: "0:0", pkt: 0}, {name: "Serbien", sp: 0, tore: "0:0", pkt: 0}, {name: "Saudi-Arabien", sp: 0, tore: "0:0", pkt: 0} ],
-            D: [ {name: "Frankreich", sp: 0, tore: "0:0", pkt: 0}, {name: "Nigeria", sp: 0, tore: "0:0", pkt: 0}, {name: "Kolumbien", sp: 0, tore: "0:0", pkt: 0}, {name: "Oman", sp: 0, tore: "0:0", pkt: 0} ],
-            E: [ {name: "Deutschland", sp: 1, tore: "1:0", pkt: 3}, {name: "Ecuador", sp: 1, tore: "0:0", pkt: 1}, {name: "Elfenbeinküste", sp: 1, tore: "0:0", pkt: 1}, {name: "Curaçao", sp: 1, tore: "0:1", pkt: 0} ],
-            F: [ {name: "Belgien", sp: 0, tore: "0:0", pkt: 0}, {name: "Marokko", sp: 0, tore: "0:0", pkt: 0}, {name: "Algerien", sp: 0, tore: "0:0", pkt: 0}, {name: "Australien", sp: 0, tore: "0:0", pkt: 0} ],
-            G: [ {name: "Portugal", sp: 0, tore: "0:0", pkt: 0}, {name: "Chile", sp: 0, tore: "0:0", pkt: 0}, {name: "Polen", sp: 0, tore: "0:0", pkt: 0}, {name: "Ägypten", sp: 0, tore: "0:0", pkt: 0} ],
-            H: [ {name: "Italien", sp: 0, tore: "0:0", pkt: 0}, {name: "Japan", sp: 0, tore: "0:0", pkt: 0}, {name: "Panama", sp: 0, tore: "0:0", pkt: 0}, {name: "Jamaika", sp: 0, tore: "0:0", pkt: 0} ],
-            I: [ {name: "Niederlande", sp: 0, tore: "0:0", pkt: 0}, {name: "Uruguay", sp: 0, tore: "0:0", pkt: 0}, {name: "Türkei", sp: 0, tore: "0:0", pkt: 0}, {name: "Irak", sp: 0, tore: "0:0", pkt: 0} ],
-            J: [ {name: "Kroatien", sp: 0, tore: "0:0", pkt: 0}, {name: "Südkorea", sp: 0, tore: "0:0", pkt: 0}, {name: "Dänemark", sp: 0, tore: "0:0", pkt: 0}, {name: "Peru", sp: 0, tore: "0:0", pkt: 0} ],
-            K: [ {name: "England", sp: 0, tore: "0:0", pkt: 0}, {name: "Iran", sp: 0, tore: "0:0", pkt: 0}, {name: "Tunesien", sp: 0, tore: "0:0", pkt: 0}, {name: "Österreich", sp: 0, tore: "0:0", pkt: 0} ],
-            L: [ {name: "Brasilien", sp: 0, tore: "0:0", pkt: 0}, {name: "Schottland", sp: 0, tore: "0:0", pkt: 0}, {name: "Mali", sp: 0, tore: "0:0", pkt: 0}, {name: "Honduras", sp: 0, tore: "0:0", pkt: 0} ]
+        // ==========================================
+        // 2. DATENBANK & FALLBACK-SYSTEM
+        // ==========================================
+        // Dies ist das Grundgerüst. Es wird durch die Live-API überschrieben, 
+        // falls diese verfügbar ist. Falls nicht, garantiert es, dass der Monitor nie leer bleibt.
+        const datenbank = {
+            gruppen: {
+                A: [{team: "Mexiko", sp: 1, t: "2:1", p: 3}, {team: "USA", sp: 1, t: "1:1", p: 1}, {team: "Kanada", sp: 1, t: "1:1", p: 1}, {team: "Ghana", sp: 1, t: "1:2", p: 0}],
+                B: [{team: "England", sp: 1, t: "3:0", p: 3}, {team: "Katar", sp: 1, t: "1:1", p: 1}, {team: "Iran", sp: 1, t: "1:1", p: 1}, {team: "Südkorea", sp: 1, t: "0:3", p: 0}],
+                C: [{team: "Argentinien", sp: 1, t: "2:0", p: 3}, {team: "Schweden", sp: 1, t: "1:1", p: 1}, {team: "Japan", sp: 1, t: "1:1", p: 1}, {team: "Neuseeland", sp: 1, t: "0:2", p: 0}],
+                D: [{team: "Frankreich", sp: 1, t: "2:1", p: 3}, {team: "Kolumbien", sp: 1, t: "1:1", p: 1}, {team: "Polen", sp: 1, t: "1:1", p: 1}, {team: "Ägypten", sp: 1, t: "1:2", p: 0}],
+                E: [{team: "Deutschland", sp: 1, t: "1:0", p: 3}, {team: "Ecuador", sp: 1, t: "0:0", p: 1}, {team: "Elfenbeinküste", sp: 1, t: "0:0", p: 1}, {team: "Curaçao", sp: 1, t: "0:1", p: 0}],
+                F: [{team: "Italien", sp: 0, t: "0:0", p: 0}, {team: "Tunesien", sp: 0, t: "0:0", p: 0}, {team: "Peru", sp: 0, t: "0:0", p: 0}, {team: "Oman", sp: 0, t: "0:0", p: 0}],
+                G: [{team: "Spanien", sp: 0, t: "0:0", p: 0}, {team: "Nigeria", sp: 0, t: "0:0", p: 0}, {team: "Irak", sp: 0, t: "0:0", p: 0}, {team: "Panama", sp: 0, t: "0:0", p: 0}],
+                H: [{team: "Portugal", sp: 0, t: "0:0", p: 0}, {team: "Australien", sp: 0, t: "0:0", p: 0}, {team: "Mali", sp: 0, t: "0:0", p: 0}, {team: "Honduras", sp: 0, t: "0:0", p: 0}],
+                I: [{team: "Brasilien", sp: 0, t: "0:0", p: 0}, {team: "Ukraine", sp: 0, t: "0:0", p: 0}, {team: "Ägypten", sp: 0, t: "0:0", p: 0}, {team: "Jamaika", sp: 0, t: "0:0", p: 0}],
+                J: [{team: "Belgien", sp: 0, t: "0:0", p: 0}, {team: "Kamerun", sp: 0, t: "0:0", p: 0}, {team: "Schottland", sp: 0, t: "0:0", p: 0}, {team: "Costa Rica", sp: 0, t: "0:0", p: 0}],
+                K: [{team: "Niederlande", sp: 0, t: "0:0", p: 0}, {team: "Österreich", sp: 0, t: "0:0", p: 0}, {team: "Algerien", sp: 0, t: "0:0", p: 0}, {team: "Katar", sp: 0, t: "0:0", p: 0}],
+                L: [{team: "Kroatien", sp: 0, t: "0:0", p: 0}, {team: "Uruguay", sp: 0, t: "0:0", p: 0}, {team: "Türkei", sp: 0, t: "0:0", p: 0}, {team: "Fidschi", sp: 0, t: "0:0", p: 0}]
+            },
+            spieleGespielt: [
+                { meta: "Gruppe A • 11. Juni", match: "Mexiko – Kanada", res: "2 : 1" },
+                { meta: "Gruppe A • 12. Juni", match: "USA – Ghana", res: "1 : 1" },
+                { meta: "Gruppe E • 14. Juni", match: "Deutschland – Curaçao", res: "1 : 0" },
+                { meta: "Gruppe E • 14. Juni", match: "Ecuador – Elfenbeinküste", res: "0 : 0" },
+                { meta: "Gruppe C • 16. Juni", match: "Argentinien – Neuseeland", res: "2 : 0" }
+            ],
+            spieleKommend: [
+                { meta: "Gruppe A • Mi, 17. Juni • 18:00 Uhr", match: "Mexiko – USA", res: "- : -" },
+                { meta: "Gruppe E • Sa, 20. Juni • 22:00 Uhr", match: "Deutschland – Elfenbeinküste", res: "- : -" },
+                { meta: "Gruppe E • So, 21. Juni • 02:00 Uhr", match: "Ecuador – Curaçao", res: "- : -" },
+                { meta: "Gruppe E • Do, 25. Juni • 22:00 Uhr", match: "Ecuador – Deutschland", res: "- : -" }
+            ]
         };
 
-        // 3. SEITENROTATION (Sichergestellt, dass sie reibungslos läuft)
-        const slides = document.querySelectorAll('.slide');
-        let currentIdx = 0;
-        const viewDuration = 14000; // 14 Sekunden Standzeit pro Seite
-        const progressBar = document.getElementById('rotation-bar');
+        // ==========================================
+        // 3. UI GENERATOR (Baut HTML fehlerfrei auf)
+        // ==========================================
+        function buildDashboard() {
+            const container = document.getElementById('dashboard-container');
+            container.innerHTML = ''; // Vorherigen Inhalt löschen
 
-        function startProgressAnimation() {
-            progressBar.style.transition = 'none';
-            progressBar.style.width = '0%';
-            setTimeout(() => {
-                progressBar.style.transition = `width ${viewDuration}ms linear`;
-                progressBar.style.width = '100%';
-            }, 50);
-        }
-
-        function cycleSlides() {
-            slides[currentIdx].classList.remove('active');
-            currentIdx = (currentIdx + 1) % slides.length;
-            slides[currentIdx].classList.add('active');
-            startProgressAnimation();
-        }
-
-        // 4. TABELLEN RENDERN
-        function renderAllTables() {
-            const letters = ["A","B","C","D","E","F","G","H","I","J","K","L"];
-            letters.forEach(l => {
-                const tbody = document.getElementById(`tbody-${l}`);
-                if (!tbody) return;
-                tbody.innerHTML = "";
-                
-                wmDaten[l].forEach((team, idx) => {
-                    const tr = document.createElement('tr');
-                    if(idx < 2) tr.className = "top-team"; // Erste zwei Plätze grün markieren
-                    tr.innerHTML = `
-                        <td>${idx + 1}. ${team.name}</td>
-                        <td style="text-align:center">${team.sp}</td>
-                        <td style="text-align:center">${team.tore}</td>
-                        <td style="text-align:center; font-weight:bold;">${team.pkt}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
+            // SLIDE 1: SPIELÜBERSICHT
+            let slide1 = `<div class="slide active grid-split" id="slide-0">`;
+            
+            // Gespielte Spiele
+            slide1 += `<div class="ts-box"><h2>Zuletzt gespielte Begegnungen</h2><div>`;
+            datenbank.spieleGespielt.forEach(s => {
+                slide1 += `
+                <div class="match-row" style="border-left-color: #64748b;">
+                    <div><div class="match-meta">${s.meta}</div><div class="match-teams">${s.match}</div></div>
+                    <div class="match-score">${s.res}</div>
+                </div>`;
             });
-        }
+            slide1 += `</div></div>`;
 
-        // 5. INITIALISIERUNG
-        renderAllTables();
-        startProgressAnimation();
-        setInterval(cycleSlides, viewDuration);
-    </script>
-</body>
-</html>
+            // Kommende Spiele
+            slide1 += `<div class="ts-box"><h2>Anstehende Spiele (Vorschau)</h2><div>`;
+            datenbank.spieleKommend.forEach(s => {
+                slide1 += `
+                <div class="match-row" style="border-left-color: var(--ts-red);">
+                    <div><div class="match-meta">${s.meta}</div><div class="match-teams">${s.match}</div></div>
+                    <div class="match-score" style="background:#cbd5e1;">${s.res}</div>
+                </div>`;
+            });
+            slide1 += `</div></div></div>`;
+            container.innerHTML += slide1;
+
+            // SLIDE 2 & 3: TABELLEN (Dynamisch iterieren)
+            const gruppenKeys = Object.keys(datenbank.gruppen);
+            for(let i = 0; i < 2; i++) {
+                let slide = `<div class="slide grid-6" id="slide-${i+1}">`;
+                let slice = i === 0 ? gruppenKeys.slice(0, 6) : gruppenKeys.slice(6, 12);
+                
+                slice.forEach(g => {
+                    let topBorder = g === 'E' ? 'border-top-color: var(--ts-red);' : '';
+                    let title = g === 'E' ? `GRUPPE E (Deutschland)` : `GRUPPE ${g}`;
+                    
+                    slide += `<div class="ts-box" style="${topBorder}"><h2>${title}</h2>
+                              <table class="ts-table">
+                              <thead><tr><th>Team</th><th>Sp.</th><th>Tore</th><th>Pkt</th></tr></thead><tbody>`;
+                    
+                    datenbank.gruppen[g].forEach((team) => {
+                        slide += `<tr>
+                            <td>${team.team}</td>
+                            <td style="text-align:center">${team.sp}</td>
+                            <td style="text-align:center">${team.t}</td>
+                            <td style="
